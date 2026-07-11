@@ -1,4 +1,4 @@
-# 🔐 TriLock — Enterprise Privacy-Preserving Surveillance Framework
+# 🔐 TriLock — Enterprise Privacy-Preserving Surveillance Framework
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](#)
 [![Security Status](https://img.shields.io/badge/security-audited-blue.svg?style=flat-square)](#)
@@ -6,6 +6,12 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](#)
 
 TriLock is a zero-trust, enterprise-grade privacy-preserving surveillance framework designed to balance municipal public safety requirements with constitutional citizen privacy rights. The platform leverages advanced cryptography, multi-party threshold authorization, and immutable logging to prevent unauthorized telemetry access.
+
+### 🌟 Key Features
+* **Triple-Key Threshold Cryptography:** Decryption requires Citizen + Government + Platform key shares.
+* **Tamper-Evident Merkle-Style Ledger:** Every transaction is hash-chained to prevent retroactive edits.
+* **AI-Powered Voice Dispatch Alerts:** Integrates with OmniDimension to place real-time outbound AI voice calls to citizens the instant their telemetry is accessed under judicial warrants.
+* **Isolated Multi-Role Clearance Portals:** Clean RBAC partitioning for Citizens, Officers, Judicial Verifiers, and Admins.
 
 ---
 
