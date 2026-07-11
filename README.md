@@ -1,74 +1,71 @@
-# 🔐 TriLock — Privacy-Preserving Surveillance Framework
+# 🔐 TriLock — Enterprise Privacy-Preserving Surveillance Framework
 
-[![Cybersecurity Hackathon 2026](https://img.shields.io/badge/Hackathon-2026-blueviolet.svg?style=flat-square)](#)
-[![Theme: Surveillance vs Privacy](https://img.shields.io/badge/Theme-Surveillance%20vs%20Privacy-red.svg?style=flat-square)](#)
-[![Tech Stack](https://img.shields.io/badge/Stack-Next.js%20%7C%20Express%20%7C%20MongoDB-cyan.svg?style=flat-square)](#)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](#)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](#)
+[![Security Status](https://img.shields.io/badge/security-audited-blue.svg?style=flat-square)](#)
+[![Tech Stack](https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20MongoDB-cyan.svg?style=flat-square)](#)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](#)
 
-> **Award-Winning Security Concept:** A zero-trust, triple-key encrypted framework designed to reconcile mass public safety requirements with constitutional citizen privacy rights.
-
----
-
-## 🎯 The Core Philosophy
-
-Modern surveillance systems present a false dichotomy: compromise public safety, or dismantle citizen privacy. **TriLock** is a cryptographic reconciliation protocol. 
-
-By employing **Shamir's secret sharing threshold concept**, **dual-verifier authorization**, and a **tamper-evident Merkle-style audit ledger**, TriLock ensures that citizen location telemetry remains completely sealed until a court-approved warrant is verified by multiple independent judicial reviews.
+TriLock is a zero-trust, enterprise-grade privacy-preserving surveillance framework designed to balance municipal public safety requirements with constitutional citizen privacy rights. The platform leverages advanced cryptography, multi-party threshold authorization, and immutable logging to prevent unauthorized telemetry access.
 
 ---
 
-## 🔐 Cryptographic Pillars
+## 🎯 System Philosophy
 
-### 1. Triple-Key Threshold Encryption
-All client telemetry is encrypted at rest using AES-256-GCM. Decryption is impossible without deriving the master key from three separate key shares:
-* **Citizen Device Key Share:** Stored locally on the user's client device. Can be rotated at any time.
-* **Law Enforcement Key Share:** Managed securely by the warrant verifier gateway.
+Traditional data surveillance systems represent a structural compromise: either sacrifice public safety by restricting access, or compromise civil liberties with unchecked monitoring. **TriLock** resolves this through cryptographic separation of authority.
+
+By utilizing **Shamir's secret sharing threshold scheme**, **dual-verifier digital signatures**, and a **tamper-evident cryptographic ledger**, TriLock guarantees that citizen telemetry remains fully sealed at rest and in transit. Access is only reconstructed dynamically under legally authorized, multi-party verified conditions.
+
+---
+
+## 🔐 Cryptographic Architecture
+
+### 1. Triple-Key Threshold Cryptography
+Telemetry is encrypted at rest using `AES-256-GCM`. The master decryption key is never stored. Instead, it is derived dynamically when three separate cryptographic key shares converge:
+* **Citizen Device Key Share:** Stored on the user's client device; supports rotatable key epochs.
+* **Law Enforcement Key Share:** Managed by the security gateway.
 * **Neutral Platform Key Share:** Kept in escrow by the core platform infrastructure.
 
 > [!IMPORTANT]
-> **No single authority** can access location coordinates alone. Only when a warrant is judicially signed off can the shares converge in memory to reconstruct the decryption key.
+> Decryption is impossible unless all three distinct key shares are dynamically assembled in memory. No single party can decrypt or access location history unilaterally.
 
-### 2. Immutable Hash-Chained Audit Ledger
-Every system transaction (registrations, logins, warrant submissions, reviews, and decryptions) is appended to an immutable chronological ledger.
-* Each log entry references the SHA-256 hash of the preceding entry.
-* If any entry is retroactively altered, the hash-chain validation breaks immediately.
-* Admins can trigger Merkle-style audit chain verification checks with a single click.
+### 2. Hash-Chained Audit Ledger
+Every transaction (user registration, authentication, key rotation, warrant application, review, and data access) is written to a sequential, append-only security ledger.
+* Every block references the SHA-256 hash of the preceding block.
+* Any unauthorized modification breaks the hash chain validation immediately.
+* Admins can run verification checks to validate ledger continuity.
 
 ### 3. Absolute Citizen Transparency
-Every time a warrant is authorized and location coordinates are decrypted, the citizen receives a real-time notification (via console logging or live **OmniDimension AI voice dispatch calls**). Citizens have a dedicated, cryptographically signed ledger showing exactly *who* accessed *what* data and *why*.
+Whenever a warrant is authorized and data is accessed, a background notification pipeline notifies the citizen via real-time triggers (with support for integrated **OmniDimension AI voice alerts**). Citizens have a dedicated dashboard displaying the complete audit history of who requested their data, when it was decrypted, and the judicial cause.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ System Components
 
-The project consists of a high-performance Express API backend and a Next.js frontend styled with modern, immersive dark-mode aesthetics.
+The project is structured with a modular API service and a modern, high-performance Next.js dashboard UI.
 
 ```
 cyberhackathon/
 ├── client/          # Next.js 16 (App Router + TypeScript + Tailwind CSS)
-└── server/          # Express.js API (Node.js + MongoDB/Mongoose)
+└── server/          # ExpressJS REST API (NodeJS + Mongoose + MongoDB)
 ```
 
-### isolated Role Portals
+### Isolated Role Portals
 
-| Role Portal | Endpoint | Theme | clearance Capability |
-| :--- | :--- | :---: | :--- |
-| **Citizen View** | `/dashboard/user` | **Cyan** | Manage local key shares, simulate location packets, and monitor audit trails. |
-| **Government Gate** | `/dashboard/government` | **Purple** | File surveillance cases, upload PDF affidavits, and request decryption. |
-| **Judicial Verifier** | `/dashboard/verifier` | **Green** | Inspect court warrants, sign off on checks, and release key shares. |
-| **System Admin** | `/dashboard/admin` | **Amber** | Oversee system-wide metrics and trigger hash-chain integrity tests. |
+| Portal | Scope & Capabilities | Security Clearance |
+| :--- | :--- | :---: |
+| **Citizen View** | Monitor vault status, execute device key rotation, inspect audit trails. | User Level |
+| **Law Enforcement** | File warrant requests, upload signed PDFs, invoke emergency keys. | Officer Level |
+| **Verification Authority** | Independent judicial warrant verification queue & dual-signature checklist. | Verifier Level |
+| **System Administration** | Health metrics, user directory oversight, audit ledger validation. | System Administrator |
 
 ---
 
-## 🛡️ Recent Security Hardening & Audit
-
-As part of a rigorous security audit, the code was hardened against the following vulnerabilities:
-* **NoSQL Injection Defenses:** Escape sequences applied on regex parameters inside user search utilities to prevent ReDoS and injection.
-* **API Rate-Limiting:** Added brute-force protection to auth endpoints (restricted to 20 requests per 15 minutes).
-* **HTTP Security Headers:** Loaded `helmet` to automatically block common web vulnerabilities.
-* **Pagination Constraints:** Implemented strict caps on paginated queries (max 100 entries per request) to prevent memory exhaustion DoS.
-* **Safe Error Handling:** Removed verbose `error.message` output from sensitive endpoints to prevent internal server state leakage.
-* **Download Hardening:** Configured `Cache-Control: no-store` and `Referrer-Policy: no-referrer` to shield time-limited JWT query strings used during warrant document downloads.
+## 🛡️ Security Audit & Hardening
+The codebase has undergone a security review and implements protection against:
+* **NoSQL Injection:** Parameter sanitization on regex queries.
+* **DoS Attacks:** Express rate limiters on authentication routes (20 requests per 15 mins) and strict pagination caps.
+* **Data Leakage:** Removal of raw developer error stack traces from production payloads.
+* **JWT Exposure:** Caching restrictions and referrer shields applied to file preview links during warrant document downloads.
 
 ---
 
@@ -135,4 +132,4 @@ npm run dev      # Starts Next.js app on http://localhost:3000
 
 ---
 
-*Built with passion for Cybersecurity Hackathon 2026. Cryptographically securing public safety and human rights.*
+*Designed and engineered with a focus on modern security standards, zero-trust architectures, and data privacy rights.*
