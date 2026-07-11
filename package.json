@@ -1,0 +1,24 @@
+{
+  "name": "trilock-hackathon",
+  "version": "1.0.0",
+  "description": "TriLock Privacy-Preserving Surveillance Framework — Cybersecurity Hackathon 2026",
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "seed": "cd server && npm run seed",
+    "dev:server": "cd server && node dev.js",
+    "dev:client": "cd client && npm run dev",
+    "dev": "start cmd /k \"cd server && node dev.js\" && start cmd /k \"cd client && npm run dev\"",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm start"
+  },
+  "keywords": [
+    "privacy",
+    "surveillance",
+    "encryption",
+    "triple-key",
+    "hackathon",
+    "cybersecurity"
+  ],
+  "author": "TriLock Team",
+  "license": "MIT"
+}
