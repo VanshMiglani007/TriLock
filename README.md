@@ -17,7 +17,33 @@ By utilizing **Shamir's secret sharing threshold scheme**, **dual-verifier digit
 
 ---
 
-## 🔐 Cryptographic Architecture
+## 🏗️ Architectural Flow
+
+The diagram below illustrates how raw location data is encrypted at the source and remains locked until court warrants undergo a dual-signature judicial clearance process, reconstructing the keys in-memory.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Citizen as Citizen Device
+    actor Officer as Law Enforcement
+    participant API as TriLock Security Gateway
+    actor Verifier as Judicial Verifiers
+    participant DB as MongoDB Escrow
+
+    Citizen->>API: 1. Send AES-256-GCM Encrypted Packet (Platform-Key locked)
+    API->>DB: Store raw encrypted payload & SHA-256 hash
+    Note over Officer, Verifier: Court Warrant Procedure
+    Officer->>API: 2. Submit Access Request + signed Affidavit PDF
+    API->>Verifier: Add request to judicial queue
+    Verifier->>API: 3. Verify PDF signature + Endorse Case (Reviewer A & B)
+    API->>API: 4. Reconstruct Decryption Key (Citizen + Gov + Platform shares)
+    API->>Officer: 5. Return temporary decrypted coordinates stream
+    API->>Citizen: 6. Trigger Real-Time Notification (AI Voice / Audit Update)
+```
+
+---
+
+## 🔐 Cryptographic Pillars
 
 ### 1. Triple-Key Threshold Cryptography
 Telemetry is encrypted at rest using `AES-256-GCM`. The master decryption key is never stored. Instead, it is derived dynamically when three separate cryptographic key shares converge:
@@ -39,9 +65,9 @@ Whenever a warrant is authorized and data is accessed, a background notification
 
 ---
 
-## 🏗️ System Components
+## 🏗️ System Components & Portals
 
-The project is structured with a modular API service and a modern, high-performance Next.js dashboard UI.
+The project is structured with a modular API service and a modern Next.js dashboard UI.
 
 ```
 cyberhackathon/
@@ -61,11 +87,40 @@ cyberhackathon/
 ---
 
 ## 🛡️ Security Audit & Hardening
-The codebase has undergone a security review and implements protection against:
-* **NoSQL Injection:** Parameter sanitization on regex queries.
+The codebase has undergone a rigorous security review and implements protection against:
+* **NoSQL Injection:** Parameter sanitization on regex queries inside administrative utilities.
 * **DoS Attacks:** Express rate limiters on authentication routes (20 requests per 15 mins) and strict pagination caps.
 * **Data Leakage:** Removal of raw developer error stack traces from production payloads.
 * **JWT Exposure:** Caching restrictions and referrer shields applied to file preview links during warrant document downloads.
+
+---
+
+## 📡 API Endpoints
+
+### Authentication & Profiles
+* `POST /api/auth/register` — Self-register a new citizen user (generates device keys & vault).
+* `POST /api/auth/login` — Authenticate and receive a JWT session token.
+* `GET /api/auth/me` — Retrieve active profile details.
+
+### Cryptographic Keys
+* `GET /api/keys/status` — Inspect rotation intervals, key status, and active key versions.
+* `GET /api/keys/totp` — Fetch rotating 6-digit Zero-Knowledge token (regenerates every 30s).
+* `POST /api/keys/regenerate` — Perform an epoch shift (rotate citizen key).
+* `GET /api/keys/citizen-key/:requestId` — Securely retrieve citizen share for approved warrants.
+* `POST /api/keys/triple-access` — Reconstruct threshold key and decrypt citizen location packets.
+
+### Telemetry & Vault
+* `GET /api/vault` — Fetch encryption standard and vault storage metrics.
+* `GET /api/vault/packets` — Retrieve encrypted telemetry metadata (paged).
+* `GET /api/vault/integrity` — Recompute and audit SHA-256 hashes of all stored packets.
+* `POST /api/packets/collect` — Send, encrypt, and store location coordinates.
+
+### Warrants & Audits
+* `POST /api/requests` — Lodge a formal surveillance case request.
+* `GET /api/requests` — List active requests (filtered by RBAC clearance).
+* `POST /api/reviews` — Log judicial check verification and case endorsement.
+* `POST /api/upload/court-order` — Upload PDF/image affidavits (hashes files for integrity).
+* `GET /api/audit/verify` — Check blockchain-like hash integrity of the system audit chain.
 
 ---
 
@@ -86,11 +141,11 @@ Use these pre-seeded development accounts to test the system:
 
 ## 🔄 End-to-End Demo Walkthrough
 
-Try this testing flow to see the full framework in action:
+Try this testing flow to see the framework in action:
 1. **Login as Citizen** (`citizen@trilock.demo`) -> Click **Capture & Encrypt Packet** to simulate location tracking. Go to **Data Vault** to view the encrypted, hashed records.
 2. **Login as Government Officer** (`officer@trilock.demo`) -> Click **New Warrant Request** -> Enter the citizen's email and legal justification -> **Upload any PDF/Image** as the signed court affidavit.
-3. **Login as Reviewer 1** (`reviewer1@trilock.demo`) -> Click the case docket -> Complete the constitutional checklist -> Click **Endorse**.
-4. **Login as Reviewer 2** (`reviewer2@trilock.demo`) -> Locate the same case docket -> Click **Endorse** (Dual-reviewer verification complete).
+3. **Login as Reviewer A** (`reviewer1@trilock.demo`) -> Click the case docket -> Complete the constitutional checklist -> Click **Endorse**.
+4. **Login as Reviewer B** (`reviewer2@trilock.demo`) -> Locate the same case docket -> Click **Endorse** (Dual-reviewer verification complete).
 5. **Login as Government Officer** (`officer@trilock.demo`) -> Open the **Emergency Break-Glass** gateway -> Generate an ephemeral access token -> Click **Decrypt Stream** to view the decrypted location coordinates.
 6. **Login as Citizen** (`citizen@trilock.demo`) -> Go to the **Audit Trail** to see the chronological record of the search warrant and data decryption.
 
