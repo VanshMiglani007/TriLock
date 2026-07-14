@@ -4,6 +4,11 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
+console.log("=================================");
+console.log("TriLock Frontend Loaded");
+console.log("API_URL =", API_URL);
+console.log("=================================");
+
 interface User {
   id: string;
   name: string;
