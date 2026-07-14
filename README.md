@@ -5,6 +5,11 @@
 [![Tech Stack](https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20MongoDB-cyan.svg?style=flat-square)](#)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](#)
 
+> **Live Production Deployments:**  
+> 💻 **Frontend Web App:** [https://tri-lock.vercel.app](https://tri-lock.vercel.app)  
+> ⚙️ **Backend REST API:** [https://trilock-api.onrender.com](https://trilock-api.onrender.com)  
+> 🩺 **Service Health Status:** [https://trilock-api.onrender.com/api/health](https://trilock-api.onrender.com/api/health)
+
 TriLock is a zero-trust, enterprise-grade privacy-preserving surveillance framework designed to balance municipal public safety requirements with constitutional citizen privacy rights. The platform leverages advanced cryptography, multi-party threshold authorization, and immutable logging to prevent unauthorized telemetry access.
 
 ### 🌟 Key Features
