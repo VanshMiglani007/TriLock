@@ -43,8 +43,10 @@ function RegisterForm() {
         name: form.name,
         email: form.email,
         password: form.password,
+        role: "user",
         phoneNumber: form.phoneNumber || undefined,
       });
+
       router.push("/dashboard/user");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Registration failed");
