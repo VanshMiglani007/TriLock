@@ -135,20 +135,35 @@ router.post('/login', async (req, res) => {
     }
 
     // Find user with password
-    const user = await User.findOne({ email }).select('+password');
+    console.log("========== LOGIN ==========");
+    console.log("Email received:", email);
+
+    const user = await User.findOne({ email }).select("+password");
+
+    console.log("User found:", !!user);
+
+    if (user) {
+      console.log("DB email:", user.email);
+      console.log("Password hash:", user.password);
+    }
+
     if (!user) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials'
+        error: "Invalid credentials"
       });
     }
 
-    // Check password
     const isMatch = await user.comparePassword(password);
+
+    console.log("Password entered:", password);
+    console.log("Password match:", isMatch);
+    console.log("==========================");
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid credentials'
+        error: "Invalid credentials"
       });
     }
 
