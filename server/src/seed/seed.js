@@ -39,7 +39,8 @@ async function seed() {
         name: 'Aarav Sharma',
         email: 'citizen@trilock.demo',
         password: 'citizen123',
-        role: 'user'
+        role: 'user',
+        phoneNumber: '+919470857177'
       },
       {
         name: 'Priya Patel',
