@@ -29,6 +29,7 @@ interface RegisterData {
   role: string;
   department?: string;
   badgeNumber?: string;
+  phoneNumber?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
