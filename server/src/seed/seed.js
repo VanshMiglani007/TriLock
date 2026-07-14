@@ -16,7 +16,10 @@ const AuditLogger = require('../utils/auditLogger');
 async function seed() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('[Seed] Connected to MongoDB');
+    console.log("[Seed] Connected");
+    console.log("Database :", mongoose.connection.name);
+    console.log("Host     :", mongoose.connection.host);
+    console.log("URI      :", process.env.MONGODB_URI);
 
     // Clear existing data
     await Promise.all([
