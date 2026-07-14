@@ -20,4 +20,8 @@ services:
       - key: UPLOAD_DIR
         value: ./uploads
       - key: CORS_ORIGIN
-        value: https://trilock.vercel.app
+        value: https://tri-lock.vercel.app
+      - key: OMNIDIM_API_KEY
+        value: WCsM7V0A4Us3UMfrHHK1B3O0ndThHD-58VoaHh2QqQM
+      - key: OMNIDIM_AGENT_ID
+        value: "205814"
