@@ -206,9 +206,6 @@ router.get('/access/:token', authenticate, authorize('government'), async (req, 
       }
     }
 
-    // Capture whether this is the first access (before incrementing)
-    const isFirstAccess = emergencyToken.accessCount === 0;
-
     // Update access count
     emergencyToken.accessCount += 1;
     await emergencyToken.save();
@@ -223,34 +220,28 @@ router.get('/access/:token', authenticate, authorize('government'), async (req, 
       details: `Emergency access used. Access count: ${emergencyToken.accessCount}. Scope: ${Object.keys(emergencyToken.scope).filter(k => emergencyToken.scope[k]).join(', ')}`
     });
 
-    // === AI Voice Notification (FIRST ACCESS ONLY) ===
-    // Only fire the voice call on the very first access of this token.
-    // Subsequent accesses (page refresh, re-opening) skip the call to
-    // preserve OmniDim free-plan minutes.
-    if (isFirstAccess) {
-      (async () => {
-        try {
-          const citizen = await User.findById(emergencyToken.targetUserId._id).select('phoneNumber name');
-          const officer = await User.findById(req.user._id).select('name department');
-          if (citizen && citizen.phoneNumber) {
-            await notifyCitizenVoiceCall({
-              phoneNumber: citizen.phoneNumber,
-              citizenName: citizen.name,
-              caseNumber: emergencyToken.caseNumber,
-              officerName: officer ? officer.name : 'Law Enforcement Officer',
-              department: officer ? officer.department : '',
-              duration: emergencyToken.duration || 24
-            });
-          } else {
-            console.log(`[TriLock VoiceAI] No phone number for citizen ${emergencyToken.targetUserId._id} — skipping call`);
-          }
-        } catch (voiceErr) {
-          console.error('[TriLock VoiceAI] Background call error:', voiceErr.message);
+    // === AI Voice Notification ===
+    // Non-blocking — errors never fail the response.
+    (async () => {
+      try {
+        const citizen = await User.findById(emergencyToken.targetUserId._id).select('phoneNumber name');
+        const officer = await User.findById(req.user._id).select('name department');
+        if (citizen && citizen.phoneNumber) {
+          await notifyCitizenVoiceCall({
+            phoneNumber: citizen.phoneNumber,
+            citizenName: citizen.name,
+            caseNumber: emergencyToken.caseNumber,
+            officerName: officer ? officer.name : 'Law Enforcement Officer',
+            department: officer ? officer.department : '',
+            duration: emergencyToken.duration || 24
+          });
+        } else {
+          console.log(`[TriLock VoiceAI] No phone number for citizen ${emergencyToken.targetUserId._id} — skipping call`);
         }
-      })();
-    } else {
-      console.log(`[TriLock VoiceAI] Token already used ${emergencyToken.accessCount} times — skipping repeat call`);
-    }
+      } catch (voiceErr) {
+        console.error('[TriLock VoiceAI] Background call error:', voiceErr.message);
+      }
+    })();
 
     res.json({
       success: true,
