@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const rateLimit = require('express-rate-limit');
 const EmergencyToken = require('../models/EmergencyToken');
 const AccessRequest = require('../models/AccessRequest');
 const Packet = require('../models/Packet');
@@ -13,15 +12,6 @@ const { generateHash } = require('../utils/hashing');
 const AuditLogger = require('../utils/auditLogger');
 const { notifyCitizenVoiceCall } = require('../utils/voiceNotify');
 
-// ── Rate limiter for emergency access endpoint ─────────────────────────
-// Strict limit: 3 requests per 15 minutes per IP to prevent abuse
-const emergencyAccessLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: 'Too many emergency access attempts. Please try again later.' }
-});
 
 /**
  * GET /api/emergency/my-tokens
@@ -152,7 +142,7 @@ router.post('/token', authenticate, authorize('admin', 'verifier', 'government')
  * GET /api/emergency/access/:token
  * Access user data using an emergency token (limited scope, time-bound)
  */
-router.get('/access/:token', emergencyAccessLimiter, authenticate, authorize('government'), async (req, res) => {
+router.get('/access/:token', authenticate, authorize('government'), async (req, res) => {
   try {
     const emergencyToken = await EmergencyToken.findOne({ token: req.params.token })
       .populate('targetUserId', 'name email');
