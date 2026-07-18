@@ -96,7 +96,7 @@ async function seedData() {
   // Create users
   const users = await User.create([
     { name: 'Aarav Sharma', email: 'citizen@trilock.demo', password: 'citizen123', role: 'user', phoneNumber: '+919470857177' },
-    { name: 'Priya Patel', email: 'citizen2@trilock.demo', password: 'citizen123', role: 'user' },
+    { name: 'Priya Patel', email: 'citizen2@trilock.demo', password: 'citizen123', role: 'user', phoneNumber: '+919470857177' },
     { name: 'Officer Rajesh Kumar', email: 'officer@trilock.demo', password: 'officer123', role: 'government', department: 'Cyber Crime Division', badgeNumber: 'GOV-2026-001' },
     { name: 'Reviewer Ananya Singh', email: 'reviewer1@trilock.demo', password: 'reviewer123', role: 'verifier' },
     { name: 'Reviewer Vikram Reddy', email: 'reviewer2@trilock.demo', password: 'reviewer123', role: 'verifier' },

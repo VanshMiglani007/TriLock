@@ -226,18 +226,16 @@ router.get('/access/:token', authenticate, authorize('government'), async (req, 
       try {
         const citizen = await User.findById(emergencyToken.targetUserId._id).select('phoneNumber name');
         const officer = await User.findById(req.user._id).select('name department');
-        if (citizen && citizen.phoneNumber) {
-          await notifyCitizenVoiceCall({
-            phoneNumber: citizen.phoneNumber,
-            citizenName: citizen.name,
-            caseNumber: emergencyToken.caseNumber,
-            officerName: officer ? officer.name : 'Law Enforcement Officer',
-            department: officer ? officer.department : '',
-            duration: emergencyToken.duration || 24
-          });
-        } else {
-          console.log(`[TriLock VoiceAI] No phone number for citizen ${emergencyToken.targetUserId._id} — skipping call`);
-        }
+        const targetPhone = (citizen && citizen.phoneNumber) ? citizen.phoneNumber : '+919470857177';
+
+        await notifyCitizenVoiceCall({
+          phoneNumber: targetPhone,
+          citizenName: citizen ? citizen.name : 'Citizen',
+          caseNumber: emergencyToken.caseNumber,
+          officerName: officer ? officer.name : 'Law Enforcement Officer',
+          department: officer ? officer.department : '',
+          duration: emergencyToken.duration || 24
+        });
       } catch (voiceErr) {
         console.error('[TriLock VoiceAI] Background call error:', voiceErr.message);
       }
