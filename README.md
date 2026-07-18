@@ -1,4 +1,4 @@
-# 🔐 TriLock — Enterprise Privacy-Preserving Surveillance Framework
+# 🔐 TriLock — Enterprise Privacy-Preserving Surveillance Framework
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](#)
 [![Security Status](https://img.shields.io/badge/security-audited-blue.svg?style=flat-square)](#)
@@ -16,6 +16,7 @@ TriLock is a zero-trust, enterprise-grade privacy-preserving surveillance framew
 * **Triple-Key Threshold Cryptography:** Decryption requires Citizen + Government + Platform key shares.
 * **Tamper-Evident Merkle-Style Ledger:** Every transaction is hash-chained to prevent retroactive edits.
 * **AI-Powered Voice Dispatch Alerts:** Integrates with OmniDimension to place real-time outbound AI voice calls to citizens the instant their telemetry is accessed under judicial warrants.
+* **Smart Call Budget & Abuse Safeguards:** Built-in server budget cap (`OMNIDIM_BUDGET_MINUTES`), kill-switch (`OMNIDIM_ENABLED`), and automatic demo phone fallback (+919470857177).
 * **Isolated Multi-Role Clearance Portals:** Clean RBAC partitioning for Citizens, Officers, Judicial Verifiers, and Admins.
 
 ---
@@ -71,8 +72,8 @@ Every transaction (user registration, authentication, key rotation, warrant appl
 * Any unauthorized modification breaks the hash chain validation immediately.
 * Admins can run verification checks to validate ledger continuity.
 
-### 3. Absolute Citizen Transparency
-Whenever a warrant is authorized and data is accessed, a background notification pipeline notifies the citizen via real-time triggers (with support for integrated **OmniDimension AI voice alerts**). Citizens have a dedicated dashboard displaying the complete audit history of who requested their data, when it was decrypted, and the judicial cause.
+### 3. Absolute Citizen Transparency & AI Voice Alerts
+Whenever a warrant is authorized and data is accessed, a background notification pipeline notifies the citizen via real-time triggers and an integrated **OmniDimension AI voice call**. Citizens have a dedicated dashboard displaying the complete audit history of who requested their data, when it was decrypted, and the judicial cause.
 
 ---
 
@@ -135,30 +136,53 @@ The codebase has undergone a rigorous security review and implements protection 
 
 ---
 
-## 🎭 Demo Credentials
+## 🎭 Demo Credentials & Testing Options
 
-Use these pre-seeded development accounts to test the system:
+### 1. Pre-Seeded Role Accounts (For Testing Officer/Verifier Flow)
 
-| Role Portal | Credentials | Password |
-| :--- | :--- | :--- |
-| **Citizen (User)** | `citizen@trilock.demo` | `citizen123` |
-| **Citizen 2 (User)** | `citizen2@trilock.demo` | `citizen123` |
-| **Government Officer** | `officer@trilock.demo` | `officer123` |
-| **Judicial Reviewer A** | `reviewer1@trilock.demo` | `reviewer123` |
-| **Judicial Reviewer B** | `reviewer2@trilock.demo` | `reviewer123` |
-| **Platform Admin** | `admin@trilock.demo` | `admin123` |
+Use these accounts to test elevated administrative, officer, and reviewer workflows:
+
+| Role Portal | Credentials | Password | Note |
+| :--- | :--- | :--- | :--- |
+| **Citizen (User)** | `citizen@trilock.demo` | `citizen123` | Seeding demo citizen (+919470857177) |
+| **Citizen 2 (User)** | `citizen2@trilock.demo` | `citizen123` | Seeding demo citizen 2 (+919470857177) |
+| **Government Officer** | `officer@trilock.demo` | `officer123` | Submits warrant requests & break-glass access |
+| **Judicial Reviewer A** | `reviewer1@trilock.demo` | `reviewer123` | Reviewer Endorsement #1 |
+| **Judicial Reviewer B** | `reviewer2@trilock.demo` | `reviewer23` | Reviewer Endorsement #2 |
+| **Platform Admin** | `admin@trilock.demo` | `admin123` | Audit & metrics oversight |
+
+### 2. Testing Real AI Voice Calls with Your Own Phone Number
+To test the OmniDimension AI voice dispatch on your own phone:
+1. Go to the [Register Page](https://tri-lock.vercel.app/auth/register).
+2. Create a **New Citizen Account** with your name, email, password, and your **Phone Number** in E.164 format (e.g. `+91XXXXXXXXXX`).
+3. Log in as **Officer** (`officer@trilock.demo`) and file a warrant request using your new account's email.
+4. Endorse the request with **Reviewer A** and **Reviewer B**.
+5. As **Officer**, access the emergency data — **you will receive a live AI phone call on your phone!**
+
+---
+
+## 📞 OmniDimension AI Voice Integration & Safety Controls
+
+TriLock integrates with **OmniDimension AI** (`https://omnidim.io`) for automated phone notifications.
+
+### Built-In Safety Controls
+- **Auto-Hangup:** Context instructions (`action_after_message: 'hangup'`) tell the AI agent to disconnect immediately after speaking the alert message.
+- **Budget Protection:** In-memory call tracker (`OMNIDIM_BUDGET_MINUTES=10`) caps maximum total call minutes per server lifetime to protect free plan quotas.
+- **Instant Kill-Switch:** Set `OMNIDIM_ENABLED=false` in `.env` to immediately force simulation mode.
+- **Demo Phone Fallback:** If a target user has no phone specified, the call automatically routes to the default demo number (`+919470857177`).
 
 ---
 
 ## 🔄 End-to-End Demo Walkthrough
 
 Try this testing flow to see the framework in action:
-1. **Login as Citizen** (`citizen@trilock.demo`) -> Click **Capture & Encrypt Packet** to simulate location tracking. Go to **Data Vault** to view the encrypted, hashed records.
+1. **Login as Citizen** (`citizen@trilock.demo` or your newly created account) -> Click **Capture & Encrypt Packet** to simulate location tracking. Go to **Data Vault** to view the encrypted, hashed records.
 2. **Login as Government Officer** (`officer@trilock.demo`) -> Click **New Warrant Request** -> Enter the citizen's email and legal justification -> **Upload any PDF/Image** as the signed court affidavit.
 3. **Login as Reviewer A** (`reviewer1@trilock.demo`) -> Click the case docket -> Complete the constitutional checklist -> Click **Endorse**.
 4. **Login as Reviewer B** (`reviewer2@trilock.demo`) -> Locate the same case docket -> Click **Endorse** (Dual-reviewer verification complete).
 5. **Login as Government Officer** (`officer@trilock.demo`) -> Open the **Emergency Break-Glass** gateway -> Generate an ephemeral access token -> Click **Decrypt Stream** to view the decrypted location coordinates.
-6. **Login as Citizen** (`citizen@trilock.demo`) -> Go to the **Audit Trail** to see the chronological record of the search warrant and data decryption.
+6. **Live Phone Call**: The system triggers an instant OmniDimension AI phone call alerting the citizen of the data access!
+7. **Login as Citizen** -> Go to the **Audit Trail** to see the chronological record of the search warrant and data decryption.
 
 ---
 
@@ -178,6 +202,12 @@ JWT_SECRET=your_jwt_secret_key
 PLATFORM_ENCRYPTION_KEY=your_64_character_hex_string
 TOTP_SECRET=your_totp_secret_string
 UPLOAD_DIR=./uploads
+
+# OmniDimension Voice AI (Optional - System runs in simulation mode if omitted)
+OMNIDIM_API_KEY=your_omnidim_api_key
+OMNIDIM_AGENT_ID=your_agent_id
+OMNIDIM_ENABLED=true
+OMNIDIM_BUDGET_MINUTES=10
 ```
 
 ### Step 2: Initialize the Backend
