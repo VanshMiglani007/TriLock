@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const EmergencyToken = require('../models/EmergencyToken');
 const AccessRequest = require('../models/AccessRequest');
 const Packet = require('../models/Packet');
@@ -11,6 +12,16 @@ const { decrypt } = require('../utils/encryption');
 const { generateHash } = require('../utils/hashing');
 const AuditLogger = require('../utils/auditLogger');
 const { notifyCitizenVoiceCall } = require('../utils/voiceNotify');
+
+// ── Rate limiter for emergency access endpoint ─────────────────────────
+// Strict limit: 3 requests per 15 minutes per IP to prevent abuse
+const emergencyAccessLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many emergency access attempts. Please try again later.' }
+});
 
 /**
  * GET /api/emergency/my-tokens
@@ -141,7 +152,7 @@ router.post('/token', authenticate, authorize('admin', 'verifier', 'government')
  * GET /api/emergency/access/:token
  * Access user data using an emergency token (limited scope, time-bound)
  */
-router.get('/access/:token', authenticate, authorize('government'), async (req, res) => {
+router.get('/access/:token', emergencyAccessLimiter, authenticate, authorize('government'), async (req, res) => {
   try {
     const emergencyToken = await EmergencyToken.findOne({ token: req.params.token })
       .populate('targetUserId', 'name email');
@@ -205,6 +216,9 @@ router.get('/access/:token', authenticate, authorize('government'), async (req, 
       }
     }
 
+    // Capture whether this is the first access (before incrementing)
+    const isFirstAccess = emergencyToken.accessCount === 0;
+
     // Update access count
     emergencyToken.accessCount += 1;
     await emergencyToken.save();
@@ -219,29 +233,34 @@ router.get('/access/:token', authenticate, authorize('government'), async (req, 
       details: `Emergency access used. Access count: ${emergencyToken.accessCount}. Scope: ${Object.keys(emergencyToken.scope).filter(k => emergencyToken.scope[k]).join(', ')}`
     });
 
-    // === AI Voice Notification ===
-    // Fetch citizen's phone number and officer info, then fire async call.
-    // This is non-blocking — errors never fail the response.
-    (async () => {
-      try {
-        const citizen = await User.findById(emergencyToken.targetUserId._id).select('phoneNumber name');
-        const officer = await User.findById(req.user._id).select('name department');
-        if (citizen && citizen.phoneNumber) {
-          await notifyCitizenVoiceCall({
-            phoneNumber: citizen.phoneNumber,
-            citizenName: citizen.name,
-            caseNumber: emergencyToken.caseNumber,
-            officerName: officer ? officer.name : 'Law Enforcement Officer',
-            department: officer ? officer.department : '',
-            duration: emergencyToken.duration || 24
-          });
-        } else {
-          console.log(`[TriLock VoiceAI] No phone number for citizen ${emergencyToken.targetUserId._id} — skipping call`);
+    // === AI Voice Notification (FIRST ACCESS ONLY) ===
+    // Only fire the voice call on the very first access of this token.
+    // Subsequent accesses (page refresh, re-opening) skip the call to
+    // preserve OmniDim free-plan minutes.
+    if (isFirstAccess) {
+      (async () => {
+        try {
+          const citizen = await User.findById(emergencyToken.targetUserId._id).select('phoneNumber name');
+          const officer = await User.findById(req.user._id).select('name department');
+          if (citizen && citizen.phoneNumber) {
+            await notifyCitizenVoiceCall({
+              phoneNumber: citizen.phoneNumber,
+              citizenName: citizen.name,
+              caseNumber: emergencyToken.caseNumber,
+              officerName: officer ? officer.name : 'Law Enforcement Officer',
+              department: officer ? officer.department : '',
+              duration: emergencyToken.duration || 24
+            });
+          } else {
+            console.log(`[TriLock VoiceAI] No phone number for citizen ${emergencyToken.targetUserId._id} — skipping call`);
+          }
+        } catch (voiceErr) {
+          console.error('[TriLock VoiceAI] Background call error:', voiceErr.message);
         }
-      } catch (voiceErr) {
-        console.error('[TriLock VoiceAI] Background call error:', voiceErr.message);
-      }
-    })();
+      })();
+    } else {
+      console.log(`[TriLock VoiceAI] Token already used ${emergencyToken.accessCount} times — skipping repeat call`);
+    }
 
     res.json({
       success: true,
